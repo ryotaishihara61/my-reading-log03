@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p><strong>読了日:</strong> ${readDate}</p>
                     <p><strong>評価:</strong> ${rating}</p>
                     <p><strong>ステータス:</strong> ${readingStatus}</p>
-                    <p><strong>コメント:</strong> ${comment ? comment.substring(0, 100) + (comment.length > 100 ? '...' : '') : 'なし'}</p>
+                    <p><strong>コメント:</strong> ${comment ? comment : 'なし'}</p>
                 </div>
             `;
             bookListContainer.appendChild(bookItem);
