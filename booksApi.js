@@ -4,49 +4,68 @@ const API_KEY = process.env.GOOGLE_BOOKS_API_KEY;
 
 // googleapisライブラリを使用して書籍情報を検索する関数
 async function searchBookByISBN(isbn) {
+    console.log('[booksApi.js] searchBookByISBN 実行 ISBN (受信時):', isbn);
     if (!API_KEY) {
-        console.error("エラー: GOOGLE_BOOKS_API_KEY が .env ファイルに設定されていません。");
+        console.error("[booksApi.js] エラー: GOOGLE_BOOKS_API_KEY が .env ファイルまたは環境変数に設定されていません。");
         throw new Error("Google Books APIキーが設定されていません。サーバー管理者に連絡してください。");
     }
 
-    if (!isbn || isbn.trim() === '') {
+    if (!isbn || String(isbn).trim() === '') {
+        console.error("[booksApi.js] エラー: ISBNが指定されていません。");
         throw new Error("ISBNが指定されていません。");
     }
 
-    try {
-        // google.books の初期化方法がバージョンによって異なる場合があるので注意
-        // 通常、APIキーはリクエストのパラメータとして含めます
-        const books = google.books({ version: 'v1' }); // APIキーはここでは渡さない
+    let sanitizedIsbn = String(isbn).replace(/-/g, ''); // 全てのハイフンを空文字に置換
+    console.log('[booksApi.js] searchBookByISBN 実行 ISBN (サニタイズ後):', sanitizedIsbn);
 
+    if (!/^\d{10}(\d{3})?$/.test(sanitizedIsbn)) {
+        console.error(`[booksApi.js] エラー: 無効なISBN形式です - ${sanitizedIsbn}`);
+        throw new Error("無効なISBN形式です。10桁または13桁の数字である必要があります。");
+    }
+
+    try {
+        const books = google.books({ version: 'v1' });
+        console.log(`[booksApi.js] Google Books APIに問い合わせ: isbn:${sanitizedIsbn}`);
         const response = await books.volumes.list({
-            q: `isbn:${isbn}`,
-            key: API_KEY // APIキーをここでパラメータとして渡す
+            q: `isbn:${sanitizedIsbn}`,
+            key: API_KEY
         });
+        console.log('[booksApi.js] Google Books APIからの生レスポンスステータス:', response.status);
 
         if (response.data.totalItems === 0 || !response.data.items) {
-            return null; // 書籍が見つからなかった場合
+            console.log(`[booksApi.js] ISBN ${sanitizedIsbn} に該当する書籍が見つかりませんでした。`);
+            return null;
         }
 
-        // 最初に見つかった書籍情報を返す
         const bookInfo = response.data.items[0].volumeInfo;
-        return {
+        let thumbnail = bookInfo.imageLinks ? bookInfo.imageLinks.thumbnail || bookInfo.imageLinks.smallThumbnail : undefined;
+
+        // HTTPをHTTPSに変換
+        if (thumbnail && thumbnail.startsWith('http://')) {
+            thumbnail = thumbnail.replace(/^http:\/\//i, 'https://');
+            console.log('[booksApi.js] サムネイルURLをHTTPSに変換しました:', thumbnail);
+        }
+
+        const result = {
             title: bookInfo.title,
-            authors: bookInfo.authors || [], // 著者は配列の場合がある
+            authors: bookInfo.authors || [],
             description: bookInfo.description,
             publishedDate: bookInfo.publishedDate,
             publisher: bookInfo.publisher,
-            thumbnail: bookInfo.imageLinks ? bookInfo.imageLinks.thumbnail || bookInfo.imageLinks.smallThumbnail : undefined,
-            isbn13: isbn // 検索に使ったISBNも返しておく
+            thumbnail: thumbnail, // 変換後のサムネイルURL
+            isbn13: sanitizedIsbn // 検索に使用したサニタイズ後のISBNを返す
         };
+        console.log('[booksApi.js] 取得した書籍情報:', result);
+        return result;
 
     } catch (error) {
-        console.error('Google Books APIでの検索中にエラーが発生しました:', error.response ? error.response.data : error.message);
+        console.error('[booksApi.js] Google Books APIでの検索中にエラーが発生しました:', error.message);
         if (error.response && error.response.data && error.response.data.error) {
+            console.error('[booksApi.js] Google API エラー詳細:', error.response.data.error);
             const apiError = error.response.data.error;
-            // APIからの具体的なエラーメッセージを投げる
             throw new Error(`Google Books API エラー: ${apiError.message} (コード: ${apiError.code})`);
         }
-        throw new Error("Google Books APIでの書籍情報取得に失敗しました。");
+        throw new Error("Google Books APIでの書籍情報取得に失敗しました。詳細はサーバーログを確認してください。");
     }
 }
 

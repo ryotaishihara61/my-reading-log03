@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 書籍検索ボタンのイベントリスナー ---
     if (searchButton) {
         searchButton.addEventListener('click', async () => {
-            let isbn = isbnInput.value.trim(); // 入力値を取得し、前後の空白を削除
+            let isbn = isbnInput.value.trim();
             if (!isbn) {
                 bookInfoArea.innerHTML = '<p style="color: red;">ISBNを入力してください。</p>';
                 registrationFormArea.style.display = 'none';
@@ -28,10 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // --- ハイフン除去処理 ---
-            isbn = isbn.replace(/-/g, ''); // 全てのハイフンを空文字に置換
+            isbn = isbn.replace(/-/g, '');
 
-            // --- ISBN形式の簡易チェック (10桁または13桁の数字か) ---
             if (!/^\d{10}(\d{3})?$/.test(isbn)) {
                  bookInfoArea.innerHTML = '<p style="color: red;">ISBNは10桁または13桁の数字で入力してください（ハイフンは自動で除去されます）。</p>';
                  registrationFormArea.style.display = 'none';
@@ -44,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentBookDataForSave = null;
 
             try {
-                const response = await fetch(`/api/search_book?isbn=${isbn}`); // 除去後のISBNを使用
+                const response = await fetch(`/api/search_book?isbn=${isbn}`);
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({ error: '書籍情報の取得に失敗しました。サーバーからの応答が不正です。' }));
                     throw new Error(errorData.error || `サーバーエラー: ${response.status}`);
@@ -53,6 +51,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const bookData = await response.json();
 
                 if (bookData) {
+                    let apiThumbnail = bookData.thumbnail;
+                    // サムネイルURLがHTTPの場合、HTTPSに変換
+                    if (apiThumbnail && apiThumbnail.startsWith('http://')) {
+                        apiThumbnail = apiThumbnail.replace(/^http:\/\//i, 'https://');
+                    }
+
                     currentBookDataForSave = {
                         isbn13: bookData.isbn13,
                         title: bookData.title,
@@ -60,13 +64,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         description: bookData.description,
                         publishedDate: bookData.publishedDate,
                         publisher: bookData.publisher,
-                        thumbnail: bookData.thumbnail // サムネイルはAPIからのものをそのまま保持
+                        thumbnail: apiThumbnail // 変換後の可能性のあるサムネイルURL
                     };
 
                     let authorsDisplay = bookData.authors && bookData.authors.length > 0 ? bookData.authors.join(', ') : '情報なし';
                     
-                    // --- サムネイル表示の処理 (代替画像対応) ---
-                    const imagePath = bookData.thumbnail ? bookData.thumbnail : '/images/no-image.png';
+                    const imagePath = apiThumbnail ? apiThumbnail : '/images/no-image.png'; // 代替画像パス
 
                     bookInfoArea.innerHTML = `
                         <h3>『${bookData.title || 'タイトル不明'}』</h3>
@@ -79,8 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                     registrationFormArea.style.display = 'block';
                 } else {
-                    // このケースはサーバー側で404が返された場合にフロントでエラーとして扱われるため、
-                    // 通常はcatchブロックで処理されます。
                     bookInfoArea.innerHTML = `<p style="color: orange;">ISBN ${isbn} に該当する書籍が見つかりませんでした。</p>`;
                     currentBookDataForSave = null;
                 }
@@ -96,8 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('要素 #searchButton が見つかりません。');
     }
 
-
-    // --- 「この読書記録を保存」ボタンのイベントリスナー ---
     if (saveButton) {
         saveButton.addEventListener('click', async () => {
             if (!currentBookDataForSave || !currentBookDataForSave.isbn13) {
@@ -116,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const dataToSave = {
-                ...currentBookDataForSave,
+                ...currentBookDataForSave, // ここには既にHTTPS変換済みのサムネイルが入っているはず
                 readDate: readDate,
                 rating: rating ? parseInt(rating) : '',
                 comment: comment,
@@ -140,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 alert(result.message || '読書記録が保存されました！');
 
-                // フォームをクリア
                 if(isbnInput) isbnInput.value = '';
                 bookInfoArea.innerHTML = '';
                 registrationFormArea.style.display = 'none';
