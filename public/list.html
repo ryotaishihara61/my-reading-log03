@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Reading Log - 読了本一覧</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="/favicon.png" type="image/png">
+    </head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container container">
+            <a href="/" class="navbar-brand">
+                <img src="/images/logo.png" alt="My Reading Log Logo" class="navbar-logo">
+                My Reading Log
+            </a>
+            <ul class="navbar-nav">
+                <li><a href="/" class="nav-link">検索・登録</a></li>
+                <li><a href="/list" class="nav-link active">一覧</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container main-content">
+        <header class="page-header">
+            <h2>読了本一覧</h2>
+        </header>
+
+        <div class="filters">
+            <h3>絞り込み検索</h3>
+            <input type="text" id="keywordSearch" placeholder="キーワード (書籍名, 著者名など)">
+            <select id="readMonthFilter">
+                <option value="">読了年月 (すべて)</option>
+                </select>
+            <select id="ratingFilter">
+                <option value="">評価 (すべて)</option>
+                <option value="5">★★★★★ (5)</option>
+                <option value="4">★★★★☆ (4)</option>
+                <option value="3">★★★☆☆ (3)</option>
+                <option value="2">★★☆☆☆ (2)</option>
+                <option value="1">★☆☆☆☆ (1)</option>
+            </select>
+            <select id="readingStatusFilter">
+                <option value="">読書ステータス (すべて)</option>
+                <option value="未読">未読</option>
+                <option value="読書中">読書中</option>
+                <option value="読了">読了</option>
+                <option value="積読">積読</option>
+                <option value="中断">中断</option>
+            </select>
+            <button id="applyFilterButton">絞り込み</button>
+            <button id="resetFilterButton" class="button-secondary">リセット</button>
+        </div>
+
+        <div id="bookListInfo">
+            <p><span id="totalBooksCount">0</span>件の書籍が見つかりました。</p>
+        </div>
+
+        <div id="bookListContainer">
+            </div>
+
+        <div id="paginationControls" class="pagination-controls">
+            </div>
+
+        <div class="chart-container">
+            <h2>月別読了冊数</h2>
+            <canvas id="booksReadChart"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/list.js"></script>
+</body>
+</html>

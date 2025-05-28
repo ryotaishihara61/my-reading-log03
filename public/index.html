@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Reading Log - 検索・登録</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="/favicon.png" type="image/png">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container container">
+            <a href="/" class="navbar-brand">
+                <img src="/images/logo.png" alt="My Reading Log Logo" class="navbar-logo">
+                My Reading Log
+            </a>
+            <ul class="navbar-nav">
+                <li><a href="/" class="nav-link active">検索・登録</a></li>
+                <li><a href="/list" class="nav-link">一覧</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container main-content">
+        <header class="page-header">
+            <h2>書籍検索と登録</h2>
+        </header>
+
+        <div class="search-container">
+            <h3>ISBNで書籍を検索</h3>
+            <input type="text" id="isbnInput" placeholder="ISBN13を入力 (例: 9784003101016)">
+            <button id="searchButton">検索</button>
+        </div>
+
+        <div id="bookInfoArea">
+            </div>
+        <hr>
+        <div id="registrationFormArea" style="display:none;">
+            <h3>読書記録</h3>
+            <div>
+                <label for="readDate">読了日:</label>
+                <input type="date" id="readDate">
+            </div>
+            <div>
+                <label for="rating">評価 (1-5):</label>
+                <input type="number" id="rating" min="1" max="5" placeholder="例: 4">
+            </div>
+            <div>
+                <label for="comment">コメント:</label>
+                <textarea id="comment" rows="4"></textarea>
+            </div>
+            <div>
+                <label for="readingStatus">読書ステータス:</label>
+                <select id="readingStatus">
+                    <option value="未読">未読</option>
+                    <option value="読書中">読書中</option>
+                    <option value="読了">読了</option>
+                    <option value="積読">積読</option>
+                    <option value="中断">中断</option>
+                </select>
+            </div>
+            <button id="saveButton">この読書記録を保存</button>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
