@@ -371,3 +371,40 @@ button:hover {
     margin-top: 0;
     margin-bottom: 20px;
 }
+
+/* public/style.css (追記または修正) */
+
+/* === フォーム要素のスタイル === */
+/* ...既存の input, select, textarea, label, button のスタイルはそのまま ... */
+
+/* ↓↓↓ 星評価UI用のスタイル ↓↓↓ */
+.rating-stars {
+    display: inline-block;
+    font-size: 2em; /* 星の大きさを調整 */
+    line-height: 1; /* textContentの変更による高さ変動を防ぐ */
+    cursor: pointer;
+    margin-bottom: 15px; /* 他のフォーム要素との間隔を合わせる */
+}
+
+.rating-stars span {
+    color: #ccc; /* 空の星の色 (薄いグレー) */
+    margin-right: 2px; /* 星同士の間隔を少し詰める */
+    transition: color 0.1s ease-in-out; /* ホバー時の色の変化を少し速く */
+    user-select: none; /* 星のテキストを選択できないようにする */
+}
+
+/* ホバー状態または選択状態の星のスタイル */
+.rating-stars span.hovered,
+.rating-stars span.selected {
+    color: #f1c40f; /* 選択された/ホバーされた星の色 (黄色系) */
+}
+/* ↑↑↑ 星評価UI用のスタイルここまで ↑↑↑ */
+
+
+/* index.htmlの登録フォーム内の各入力項目をdivで囲った場合のマージン調整 */
+#registrationFormArea > div { /* 直下のdiv要素に適用 */
+    margin-bottom: 15px;
+}
+#registrationFormArea > div:last-of-type { /* 最後のdiv要素の下マージン */
+    margin-bottom: 20px; /* 保存ボタンとの間隔 */
+}
