@@ -18,9 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentBookDataForSave = null;
 
     // --- 書籍検索ボタンのイベントリスナー ---
-    if (searchButton) { // searchButtonが存在する場合のみリスナーを設定
+    if (searchButton) {
         searchButton.addEventListener('click', async () => {
-            const isbn = isbnInput.value.trim();
+            let isbn = isbnInput.value.trim(); // 入力値を取得し、前後の空白を削除
             if (!isbn) {
                 bookInfoArea.innerHTML = '<p style="color: red;">ISBNを入力してください。</p>';
                 registrationFormArea.style.display = 'none';
@@ -28,12 +28,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // --- ハイフン除去処理 ---
+            isbn = isbn.replace(/-/g, ''); // 全てのハイフンを空文字に置換
+
+            // --- ISBN形式の簡易チェック (10桁または13桁の数字か) ---
+            if (!/^\d{10}(\d{3})?$/.test(isbn)) {
+                 bookInfoArea.innerHTML = '<p style="color: red;">ISBNは10桁または13桁の数字で入力してください（ハイフンは自動で除去されます）。</p>';
+                 registrationFormArea.style.display = 'none';
+                 currentBookDataForSave = null;
+                 return;
+            }
+
             bookInfoArea.innerHTML = '<p>検索中...</p>';
             registrationFormArea.style.display = 'none';
             currentBookDataForSave = null;
 
             try {
-                const response = await fetch(`/api/search_book?isbn=${isbn}`);
+                const response = await fetch(`/api/search_book?isbn=${isbn}`); // 除去後のISBNを使用
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({ error: '書籍情報の取得に失敗しました。サーバーからの応答が不正です。' }));
                     throw new Error(errorData.error || `サーバーエラー: ${response.status}`);
@@ -43,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (bookData) {
                     currentBookDataForSave = {
-                        isbn13: bookData.isbn13,
+                        isbn13: bookData.isbn13, // APIから返されたISBN (検索に使ったものと同じ、またはAPIが正規化したもの)
                         title: bookData.title,
                         author: bookData.authors && bookData.authors.length > 0 ? bookData.authors.join(', ') : '',
                         description: bookData.description,
@@ -64,6 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                     registrationFormArea.style.display = 'block';
                 } else {
+                    // このケースはサーバー側で404が返された場合にフロントでエラーとして扱われるため、
+                    // 通常はcatchブロックで処理されます。
                     bookInfoArea.innerHTML = `<p style="color: orange;">ISBN ${isbn} に該当する書籍が見つかりませんでした。</p>`;
                     currentBookDataForSave = null;
                 }
@@ -81,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- 「この読書記録を保存」ボタンのイベントリスナー ---
-    if (saveButton) { // saveButtonが存在する場合のみリスナーを設定
+    if (saveButton) {
         saveButton.addEventListener('click', async () => {
             if (!currentBookDataForSave || !currentBookDataForSave.isbn13) {
                 alert('まず書籍を検索して情報を表示してください。');
@@ -124,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(result.message || '読書記録が保存されました！');
 
                 // フォームをクリア
-                if(isbnInput) isbnInput.value = ''; // isbnInputが存在すればクリア
+                if(isbnInput) isbnInput.value = '';
                 bookInfoArea.innerHTML = '';
                 registrationFormArea.style.display = 'none';
                 currentBookDataForSave = null;
