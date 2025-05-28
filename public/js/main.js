@@ -54,19 +54,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (bookData) {
                     currentBookDataForSave = {
-                        isbn13: bookData.isbn13, // APIから返されたISBN (検索に使ったものと同じ、またはAPIが正規化したもの)
+                        isbn13: bookData.isbn13,
                         title: bookData.title,
                         author: bookData.authors && bookData.authors.length > 0 ? bookData.authors.join(', ') : '',
                         description: bookData.description,
                         publishedDate: bookData.publishedDate,
                         publisher: bookData.publisher,
-                        thumbnail: bookData.thumbnail
+                        thumbnail: bookData.thumbnail // サムネイルはAPIからのものをそのまま保持
                     };
 
                     let authorsDisplay = bookData.authors && bookData.authors.length > 0 ? bookData.authors.join(', ') : '情報なし';
+                    
+                    // --- サムネイル表示の処理 (代替画像対応) ---
+                    const imagePath = bookData.thumbnail ? bookData.thumbnail : '/images/no-image.png';
+
                     bookInfoArea.innerHTML = `
                         <h3>『${bookData.title || 'タイトル不明'}』</h3>
-                        ${bookData.thumbnail ? `<img src="${bookData.thumbnail}" alt="表紙画像" style="max-width: 150px; float: left; margin-right: 15px;">` : ''}
+                        <img src="${imagePath}" alt="${bookData.title || '書籍'}の表紙" style="max-width: 150px; float: left; margin-right: 15px;">
                         <p><strong>著者:</strong> ${authorsDisplay}</p>
                         <p><strong>出版社:</strong> ${bookData.publisher || '情報なし'}</p>
                         <p><strong>出版日:</strong> ${bookData.publishedDate || '情報なし'}</p>
