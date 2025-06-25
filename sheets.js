@@ -94,6 +94,13 @@ async function getBooksFromSheet(filters = {}) {
             return book;
         });
 
+        // 読了日でソート（新しい順）
+        books.sort((a, b) => {
+            const dateA = a.readDate ? new Date(a.readDate) : new Date(0);
+            const dateB = b.readDate ? new Date(b.readDate) : new Date(0);
+            return dateB - dateA; // 降順（新しい順）
+        });
+
         // --- フィルタリング ---
         if (keyword) {
             const lowerKeyword = keyword.toLowerCase();

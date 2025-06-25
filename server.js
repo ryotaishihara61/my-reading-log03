@@ -4,7 +4,7 @@
 require('dotenv').config(); // .envファイルから環境変数を読み込みます
 const express = require('express');
 const path = require('path');
-const { searchBookByISBN } = require('./booksApi'); // booksApi.jsからインポート
+const { searchBookByISBN, searchBookByTitle } = require('./booksApi'); // booksApi.jsからインポート
 const { getBooksFromSheet, saveBookToSheet, getBooksStatsFromSheet } = require('./sheets'); // sheets.jsからインポート
 
 // 2. Expressアプリケーションを作成します
@@ -20,33 +20,51 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 5. 基本的なHTMLページを提供するルートを設定します
-// ルートURL ('/') にアクセスがあった場合、public/index.html を送信します
+// ルートURL ('/') にアクセスがあった場合、public/list.html を送信します（一覧をトップページにする）
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'list.html'));
 });
 
-// '/list' URLにアクセスがあった場合、public/list.html を送信します
+// '/list' URLにアクセスがあった場合、public/list.html を送信します  
 app.get('/list', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'list.html'));
 });
 
+// '/register' URLにアクセスがあった場合、public/index.html を送信します（書籍登録ページ）
+app.get('/register', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // --- APIエンドポイント ---
 
-// 書籍検索API (ISBNを使用)
+// 書籍検索API (ISBNまたは作品名を使用)
 app.get('/api/search_book', async (req, res) => {
-    const isbn = req.query.isbn;
-    if (!isbn) {
-        return res.status(400).json({ error: 'ISBNを指定してください。' });
+    const { isbn, title } = req.query;
+    
+    if (!isbn && !title) {
+        return res.status(400).json({ error: 'ISBNまたは作品名を指定してください。' });
     }
+    
     try {
-        const bookData = await searchBookByISBN(isbn);
-        if (bookData) {
-            res.json(bookData);
-        } else {
-            res.status(404).json({ error: `ISBN ${isbn} に該当する書籍が見つかりませんでした。` });
+        if (isbn) {
+            // ISBN検索
+            const bookData = await searchBookByISBN(isbn);
+            if (bookData) {
+                res.json({ type: 'single', data: bookData });
+            } else {
+                res.status(404).json({ error: `ISBN ${isbn} に該当する書籍が見つかりませんでした。` });
+            }
+        } else if (title) {
+            // 作品名検索
+            const booksData = await searchBookByTitle(title);
+            if (booksData && booksData.length > 0) {
+                res.json({ type: 'multiple', data: booksData });
+            } else {
+                res.status(404).json({ error: `作品名 "${title}" に該当する書籍が見つかりませんでした。` });
+            }
         }
     } catch (error) {
-        console.error(`書籍検索APIエラー (ISBN: ${isbn}):`, error);
+        console.error(`書籍検索APIエラー (ISBN: ${isbn}, Title: ${title}):`, error);
         res.status(500).json({ error: error.message || '書籍情報の検索中にサーバーエラーが発生しました。' });
     }
 });

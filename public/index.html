@@ -15,8 +15,8 @@
                 My Reading Log
             </a>
             <ul class="navbar-nav">
-                <li><a href="/" class="nav-link active">検索・登録</a></li>
-                <li><a href="/list" class="nav-link">一覧</a></li>
+                <li><a href="/" class="nav-link">一覧</a></li>
+                <li><a href="/register" class="nav-link active">検索・登録</a></li>
             </ul>
         </div>
     </nav>
@@ -27,8 +27,18 @@
         </header>
 
         <div class="search-container">
-            <h3>ISBNで書籍を検索</h3>
-            <input type="text" id="isbnInput" placeholder="ISBN13を入力 (例: 9784003101016)">
+            <h3>書籍を検索</h3>
+            <div class="search-type-selector">
+                <label>
+                    <input type="radio" name="searchType" value="isbn" checked>
+                    ISBN検索
+                </label>
+                <label>
+                    <input type="radio" name="searchType" value="title">
+                    作品名検索
+                </label>
+            </div>
+            <input type="text" id="searchInput" placeholder="ISBN13を入力 (例: 9784003101016)">
             <button id="searchButton">検索</button>
         </div>
 
