@@ -17,8 +17,8 @@
       "purpose": "any"
     },
     {
-      "src": "/apple-touch-icon.png",
-      "sizes": "180x180",
+      "src": "/favicon.png",
+      "sizes": "21x21",
       "type": "image/png",
       "purpose": "any"
     },
