@@ -98,6 +98,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             🔍 Amazonで検索
                         </a>
                     </div>` : ''}
+                    <div class="book-actions">
+                        <button class="edit-btn" data-isbn="${book.isbn13 || ''}" onclick="openEditModal('${book.isbn13 || ''}')">📝 編集</button>
+                        <button class="delete-btn" data-isbn="${book.isbn13 || ''}" onclick="deleteBook('${book.isbn13 || ''}', '${title.replace(/'/g, "\\'")}')">🗑️ 削除</button>
+                    </div>
                 </div>
             `;
             bookListContainer.appendChild(bookItem);
@@ -222,6 +226,112 @@ document.addEventListener('DOMContentLoaded', () => {
             readingStatusFilterSelect.value = '';
             fetchAndDisplayBooks(1, {});
         });
+    }
+
+    // 編集モーダル関連の関数
+    window.openEditModal = function(isbn) {
+        const modal = document.getElementById('editModal');
+        if (!modal) return;
+        
+        // 該当する書籍データを取得してフォームに設定
+        fetchBookForEdit(isbn);
+        modal.style.display = 'block';
+    };
+
+    window.closeEditModal = function() {
+        const modal = document.getElementById('editModal');
+        if (modal) modal.style.display = 'none';
+    };
+
+    window.deleteBook = function(isbn, title) {
+        if (confirm(`「${title}」を削除してもよろしいですか？`)) {
+            performDeleteBook(isbn);
+        }
+    };
+
+    async function fetchBookForEdit(isbn) {
+        try {
+            const response = await fetch(`/api/get_books?keyword=${isbn}&limit=1`);
+            if (!response.ok) throw new Error('書籍データの取得に失敗しました');
+            
+            const result = await response.json();
+            if (result.data && result.data.length > 0) {
+                const book = result.data[0];
+                populateEditForm(book);
+            }
+        } catch (error) {
+            console.error('編集用データ取得エラー:', error);
+            alert('書籍データの取得に失敗しました: ' + error.message);
+        }
+    }
+
+    function populateEditForm(book) {
+        const form = document.getElementById('editBookForm');
+        if (!form) return;
+
+        form.querySelector('#editTitle').value = book.title || '';
+        form.querySelector('#editAuthor').value = book.author || '';
+        form.querySelector('#editReadDate').value = book.readDate || '';
+        form.querySelector('#editRating').value = book.rating || '';
+        form.querySelector('#editComment').value = book.comment || '';
+        form.querySelector('#editReadingStatus').value = book.readingStatus || '';
+        form.dataset.isbn = book.isbn13 || '';
+    }
+
+    window.saveBookEdit = async function() {
+        const form = document.getElementById('editBookForm');
+        if (!form) return;
+
+        const bookData = {
+            isbn13: form.dataset.isbn,
+            title: form.querySelector('#editTitle').value,
+            author: form.querySelector('#editAuthor').value,
+            readDate: form.querySelector('#editReadDate').value,
+            rating: form.querySelector('#editRating').value,
+            comment: form.querySelector('#editComment').value,
+            readingStatus: form.querySelector('#editReadingStatus').value
+        };
+
+        try {
+            const response = await fetch('/api/update_book', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(bookData)
+            });
+
+            if (!response.ok) {
+                const errorResult = await response.json().catch(() => ({ error: '書籍の更新に失敗しました。' }));
+                throw new Error(errorResult.error);
+            }
+
+            alert('書籍情報を更新しました');
+            closeEditModal();
+            fetchAndDisplayBooks(currentPage, getCurrentFilters());
+        } catch (error) {
+            console.error('書籍更新エラー:', error);
+            alert('書籍の更新に失敗しました: ' + error.message);
+        }
+    };
+
+    async function performDeleteBook(isbn) {
+        try {
+            const response = await fetch('/api/delete_book', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isbn13: isbn })
+            });
+
+            if (!response.ok) {
+                const errorResult = await response.json().catch(() => ({ error: '書籍の削除に失敗しました。' }));
+                throw new Error(errorResult.error);
+            }
+
+            alert('書籍を削除しました');
+            fetchAndDisplayBooks(currentPage, getCurrentFilters());
+        } catch (error) {
+            console.error('書籍削除エラー:', error);
+            alert('書籍の削除に失敗しました: ' + error.message);
+        }
     }
 
     fetchAndDisplayBooks(currentPage, getCurrentFilters());

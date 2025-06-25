@@ -266,8 +266,133 @@ async function getBooksStatsFromSheet() {
 }
 
 
+// 書籍データを更新
+async function updateBookInSheet(bookDetails) {
+    console.log('[sheets.js] updateBookInSheet が呼び出されました。');
+    console.log('[sheets.js] 受信した bookDetails:', JSON.stringify(bookDetails, null, 2));
+
+    const sheets = await getSheetsService();
+    const sheetName = 'Sheet1';
+    const rangeToRead = `${sheetName}!A:${String.fromCharCode(65 + HEADERS.length - 1)}`;
+
+    try {
+        // 全データを取得して該当行を特定
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: SPREADSHEET_ID,
+            range: rangeToRead,
+        });
+
+        const rows = response.data.values;
+        if (!rows || rows.length <= 1) {
+            throw new Error('更新対象の書籍が見つかりません。');
+        }
+
+        // ISBN13で該当行を検索
+        let targetRowIndex = -1;
+        for (let i = 1; i < rows.length; i++) {
+            if (rows[i][0] === bookDetails.isbn13) { // ISBN13は1列目（インデックス0）
+                targetRowIndex = i + 1; // スプレッドシートの行番号（1ベース）
+                break;
+            }
+        }
+
+        if (targetRowIndex === -1) {
+            throw new Error(`ISBN ${bookDetails.isbn13} の書籍が見つかりません。`);
+        }
+
+        // 更新データを準備
+        const updatedRow = HEADERS.map(header => {
+            const value = bookDetails[header];
+            return value !== undefined && value !== null ? String(value) : '';
+        });
+
+        console.log('[sheets.js] 更新する行データ:', updatedRow);
+        console.log('[sheets.js] 更新対象行:', targetRowIndex);
+
+        // 該当行を更新
+        const updateResponse = await sheets.spreadsheets.values.update({
+            spreadsheetId: SPREADSHEET_ID,
+            range: `${sheetName}!A${targetRowIndex}:${String.fromCharCode(65 + HEADERS.length - 1)}${targetRowIndex}`,
+            valueInputOption: 'USER_ENTERED',
+            resource: {
+                values: [updatedRow],
+            },
+        });
+
+        console.log('[sheets.js] 更新レスポンス:', JSON.stringify(updateResponse.data, null, 2));
+        return updateResponse.data;
+
+    } catch (err) {
+        console.error('[sheets.js] updateBookInSheet内でのエラー:', err.message);
+        throw new Error('書籍データの更新に失敗しました: ' + err.message);
+    }
+}
+
+// 書籍データを削除
+async function deleteBookFromSheet(isbn13) {
+    console.log('[sheets.js] deleteBookFromSheet が呼び出されました。ISBN:', isbn13);
+
+    const sheets = await getSheetsService();
+    const sheetName = 'Sheet1';
+    const rangeToRead = `${sheetName}!A:${String.fromCharCode(65 + HEADERS.length - 1)}`;
+
+    try {
+        // 全データを取得して該当行を特定
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: SPREADSHEET_ID,
+            range: rangeToRead,
+        });
+
+        const rows = response.data.values;
+        if (!rows || rows.length <= 1) {
+            throw new Error('削除対象の書籍が見つかりません。');
+        }
+
+        // ISBN13で該当行を検索
+        let targetRowIndex = -1;
+        for (let i = 1; i < rows.length; i++) {
+            if (rows[i][0] === isbn13) { // ISBN13は1列目（インデックス0）
+                targetRowIndex = i + 1; // スプレッドシートの行番号（1ベース）
+                break;
+            }
+        }
+
+        if (targetRowIndex === -1) {
+            throw new Error(`ISBN ${isbn13} の書籍が見つかりません。`);
+        }
+
+        console.log('[sheets.js] 削除対象行:', targetRowIndex);
+
+        // 行を削除
+        const deleteResponse = await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: SPREADSHEET_ID,
+            resource: {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: 0, // シートIDを指定（通常最初のシートは0）
+                            dimension: 'ROWS',
+                            startIndex: targetRowIndex - 1, // 0ベースインデックス
+                            endIndex: targetRowIndex // 1行だけ削除
+                        }
+                    }
+                }]
+            }
+        });
+
+        console.log('[sheets.js] 削除レスポンス:', JSON.stringify(deleteResponse.data, null, 2));
+        return deleteResponse.data;
+
+    } catch (err) {
+        console.error('[sheets.js] deleteBookFromSheet内でのエラー:', err.message);
+        throw new Error('書籍データの削除に失敗しました: ' + err.message);
+    }
+}
+
 module.exports = {
     getBooksFromSheet,
     saveBookToSheet,
-    getBooksStatsFromSheet
+    getBooksStatsFromSheet,
+    updateBookInSheet,
+    deleteBookFromSheet
 };

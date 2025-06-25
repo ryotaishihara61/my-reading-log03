@@ -5,7 +5,7 @@ require('dotenv').config(); // .envファイルから環境変数を読み込み
 const express = require('express');
 const path = require('path');
 const { searchBookByISBN, searchBookByTitle } = require('./booksApi'); // booksApi.jsからインポート
-const { getBooksFromSheet, saveBookToSheet, getBooksStatsFromSheet } = require('./sheets'); // sheets.jsからインポート
+const { getBooksFromSheet, saveBookToSheet, getBooksStatsFromSheet, updateBookInSheet, deleteBookFromSheet } = require('./sheets'); // sheets.jsからインポート
 
 // 2. Expressアプリケーションを作成します
 const app = express();
@@ -132,6 +132,38 @@ app.get('/api/books_stats', async (req, res) => {
     } catch (error) {
         console.error('書籍統計の取得中にサーバーエラーが発生しました:', error);
         res.status(500).json({ error: error.message || '書籍統計の取得に失敗しました。' });
+    }
+});
+
+// 書籍情報更新API
+app.put('/api/update_book', async (req, res) => {
+    const bookDataToUpdate = req.body;
+    if (!bookDataToUpdate || !bookDataToUpdate.isbn13) {
+        return res.status(400).json({ error: '更新する書籍のISBN13が必要です。' });
+    }
+    
+    try {
+        const result = await updateBookInSheet(bookDataToUpdate);
+        res.json({ message: '書籍情報が正常に更新されました。', data: result });
+    } catch (error) {
+        console.error('書籍情報の更新中にサーバーエラーが発生しました:', error);
+        res.status(500).json({ error: error.message || '書籍情報の更新に失敗しました。' });
+    }
+});
+
+// 書籍削除API
+app.delete('/api/delete_book', async (req, res) => {
+    const { isbn13 } = req.body;
+    if (!isbn13) {
+        return res.status(400).json({ error: '削除する書籍のISBN13が必要です。' });
+    }
+    
+    try {
+        const result = await deleteBookFromSheet(isbn13);
+        res.json({ message: '書籍が正常に削除されました。', data: result });
+    } catch (error) {
+        console.error('書籍削除中にサーバーエラーが発生しました:', error);
+        res.status(500).json({ error: error.message || '書籍の削除に失敗しました。' });
     }
 });
 
