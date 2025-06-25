@@ -16,8 +16,6 @@ const PORT = process.env.PORT || 3000;
 // 4. ミドルウェアを設定します
 // JSON形式のリクエストボディを解析できるようにします
 app.use(express.json());
-// 静的ファイル (HTML, CSS, クライアント側JavaScript) を配信するための設定
-app.use(express.static(path.join(__dirname, 'public')));
 
 // 5. 基本的なHTMLページを提供するルートを設定します
 // ルートURL ('/') にアクセスがあった場合、public/list.html を送信します（一覧をトップページにする）
@@ -34,6 +32,10 @@ app.get('/list', (req, res) => {
 app.get('/register', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+// 静的ファイル (HTML, CSS, クライアント側JavaScript) を配信するための設定
+// ルートハンドラーの後に配置して、特定のルートを優先させる
+app.use(express.static(path.join(__dirname, 'public')));
 
 // --- APIエンドポイント ---
 
