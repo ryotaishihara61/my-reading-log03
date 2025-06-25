@@ -76,11 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const comment = book.comment || '';
             const readingStatus = book.readingStatus || 'ステータスなし';
             
-            // Amazonリンクを生成（既存データの場合はISBNから、新データの場合は保存されたリンクを使用）
+            // Amazonリンクを生成（既存データの場合はISBN+タイトルから、新データの場合は保存されたリンクを使用）
             let amazonLink = book.amazonLink;
-            if (!amazonLink && book.isbn13) {
+            if (!amazonLink && book.isbn13 && book.title) {
                 const cleanIsbn = book.isbn13.replace(/[-\s]/g, '');
-                amazonLink = `https://amazon.co.jp/dp/${cleanIsbn}`;
+                const encodedTitle = encodeURIComponent(book.title);
+                amazonLink = `https://amazon.co.jp/s?k=${cleanIsbn}+${encodedTitle}`;
             }
 
             bookItem.innerHTML = `
@@ -94,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p><strong>コメント:</strong> ${comment ? comment : 'なし'}</p>
                     ${amazonLink ? `<div class="amazon-link-container">
                         <a href="${amazonLink}" target="_blank" rel="noopener noreferrer" class="amazon-link-btn">
-                            📚 Amazonで見る
+                            🔍 Amazonで検索
                         </a>
                     </div>` : ''}
                 </div>
