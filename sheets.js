@@ -14,7 +14,8 @@ const HEADERS = [
     "readDate",
     "rating",
     "comment",
-    "readingStatus"
+    "readingStatus",
+    "amazonLink"
 ];
 
 function getSheetsAuth() {

@@ -77,6 +77,13 @@ app.post('/api/save_book', async (req, res) => {
     if (!bookDataToSave || !bookDataToSave.title || !bookDataToSave.isbn13) {
         return res.status(400).json({ error: '保存する書籍データが不完全です。タイトルとISBNは必須です。' });
     }
+    
+    // ISBNからAmazonリンクを自動生成
+    if (bookDataToSave.isbn13) {
+        const cleanIsbn = bookDataToSave.isbn13.replace(/[-\s]/g, ''); // ハイフンとスペースを除去
+        bookDataToSave.amazonLink = `https://amazon.co.jp/dp/${cleanIsbn}`;
+    }
+    
     try {
         const result = await saveBookToSheet(bookDataToSave);
         res.status(201).json({ message: '読書記録が正常に保存されました。', data: result });

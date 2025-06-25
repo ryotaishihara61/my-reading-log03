@@ -436,6 +436,33 @@ button:active {
     }
 }
 
+/* === Amazonリンクボタン === */
+.amazon-link-container {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.amazon-link-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #ff9500 0%, #ff7700 100%);
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 149, 0, 0.4);
+}
+
+.amazon-link-btn:hover {
+    background: linear-gradient(135deg, #ff7700 0%, #ff5500 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 149, 0, 0.6);
+    color: white;
+    text-decoration: none;
+}
+
 .book-item {
     display: flex;
     flex-direction: column;

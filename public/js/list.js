@@ -75,6 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const rating = book.rating ? '★'.repeat(parseInt(book.rating)) + '☆'.repeat(5 - parseInt(book.rating)) + ` (${book.rating})` : '評価なし';
             const comment = book.comment || '';
             const readingStatus = book.readingStatus || 'ステータスなし';
+            
+            // Amazonリンクを生成（既存データの場合はISBNから、新データの場合は保存されたリンクを使用）
+            let amazonLink = book.amazonLink;
+            if (!amazonLink && book.isbn13) {
+                const cleanIsbn = book.isbn13.replace(/[-\s]/g, '');
+                amazonLink = `https://amazon.co.jp/dp/${cleanIsbn}`;
+            }
 
             bookItem.innerHTML = `
                 <img src="${imagePath}" alt="${title}の表紙">
@@ -85,6 +92,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p><strong>評価:</strong> ${rating}</p>
                     <p><strong>ステータス:</strong> ${readingStatus}</p>
                     <p><strong>コメント:</strong> ${comment ? comment : 'なし'}</p>
+                    ${amazonLink ? `<div class="amazon-link-container">
+                        <a href="${amazonLink}" target="_blank" rel="noopener noreferrer" class="amazon-link-btn">
+                            📚 Amazonで見る
+                        </a>
+                    </div>` : ''}
                 </div>
             `;
             bookListContainer.appendChild(bookItem);
