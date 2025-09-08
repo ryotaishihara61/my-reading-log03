@@ -1,0 +1,100 @@
+.book-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s;
+}
+
+.book-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.book-image {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.book-image img {
+  width: 100px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.book-info {
+  text-align: left;
+}
+
+.book-title {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.book-author {
+  margin: 0 0 6px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.book-date {
+  margin: 0 0 6px 0;
+  color: #999;
+  font-size: 12px;
+}
+
+.book-description {
+  margin: 8px 0;
+  color: #555;
+  font-size: 13px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.book-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.status-select {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.add-button {
+  padding: 6px 16px;
+  background-color: #646cff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.add-button:hover {
+  background-color: #535bf2;
+}
+
+.already-added {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.already-added span {
+  color: #28a745;
+  font-weight: 500;
+  font-size: 14px;
+}
