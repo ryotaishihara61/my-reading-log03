@@ -122,12 +122,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(errorData.error || `サーバーエラー: ${response.status}`);
                 }
                 const result = await response.json();
+                console.log('検索API結果:', result);
 
                 if (result.type === 'single') {
                     // ISBN検索の結果（1件）
+                    console.log('単一書籍の結果を処理します:', result.data);
                     displaySingleBook(result.data);
                 } else if (result.type === 'multiple') {
                     // 作品名検索の結果（複数件）
+                    console.log('複数書籍の結果を処理します:', result.data);
                     displayMultipleBooks(result.data);
                 }
             } catch (error) {
@@ -143,19 +146,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 単一書籍表示関数
     function displaySingleBook(bookData) {
+        console.log('displaySingleBook called with:', bookData);
+
         let apiThumbnail = bookData.thumbnail;
         if (apiThumbnail && apiThumbnail.startsWith('http://')) {
             apiThumbnail = apiThumbnail.replace(/^http:\/\//i, 'https://');
         }
+
         currentBookDataForSave = {
-            isbn13: bookData.isbn13,
-            title: bookData.title,
+            isbn13: bookData.isbn13 || '',
+            title: bookData.title || '',
             author: bookData.authors && bookData.authors.length > 0 ? bookData.authors.join(', ') : '',
-            description: bookData.description,
-            publishedDate: bookData.publishedDate,
-            publisher: bookData.publisher,
-            thumbnail: apiThumbnail
+            description: bookData.description || '',
+            publishedDate: bookData.publishedDate || '',
+            publisher: bookData.publisher || '',
+            thumbnail: apiThumbnail || ''
         };
+
+        console.log('currentBookDataForSave updated to:', currentBookDataForSave);
         let authorsDisplay = bookData.authors && bookData.authors.length > 0 ? bookData.authors.join(', ') : '情報なし';
         const imagePath = apiThumbnail ? apiThumbnail : '/images/no-image.png';
         bookInfoArea.innerHTML = `
@@ -213,8 +221,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 「この読書記録を保存」ボタンのイベントリスナー ---
     if (saveButton) {
         saveButton.addEventListener('click', async () => {
-            if (!currentBookDataForSave || !currentBookDataForSave.isbn13) {
+            console.log('保存ボタンがクリックされました');
+            console.log('currentBookDataForSave:', currentBookDataForSave);
+
+            if (!currentBookDataForSave) {
                 alert('まず書籍を検索して情報を表示してください。');
+                return;
+            }
+
+            if (!currentBookDataForSave.isbn13 && !currentBookDataForSave.title) {
+                alert('書籍情報が不完全です。再度検索してください。');
                 return;
             }
             const readDate = readDateInput.value;
@@ -233,6 +249,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 comment: comment,
                 readingStatus: readingStatus
             };
+
+            console.log('保存するデータ:', dataToSave);
 
             try {
                 const response = await fetch('/api/save_book', {
